@@ -19,7 +19,7 @@ along with this container.
 Here are the steps that you will need in order to properly build this container
 and use it:
 
-- Go into Poisson Superfish website and download the file.
+- Go into the [Poisson Superfish website](https://laacg.lanl.gov/laacg/services/download_sf.phtml#ps6) and download the file.
 - Using a Windows machine, install it and copy the binary files from the 
 installation folder into a folder called `PoissonSuperfish`.
 - Make a tarball of this folder with:
