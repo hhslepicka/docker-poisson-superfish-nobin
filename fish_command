@@ -1,0 +1,11 @@
+#!/bin/bash
+# Wrapper for the Superfish commands to overcome the issue described at:
+# https://bugs.winehq.org/show_bug.cgi?id=44236#c4
+# First argument is the command, remaining arguments are passed to command
+# Solution based on https://stackoverflow.com/a/20165094
+
+# Give time to Xvfb to start properly
+# Commenting out this as I think the issue was with xvfb-run and not here
+#sleep 2
+
+watcher "${1}" "${2}" > /dev/null 2>&1

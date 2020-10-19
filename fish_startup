@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ ! -d "/tmp/psf_${1}" ]; then
+  cp -r /wine_configs/default /tmp/psf_${1}
+fi

@@ -1,0 +1,34 @@
+#!/bin/bash
+# Wrapper for the Superfish commands to overcome the issue described at:
+# https://bugs.winehq.org/show_bug.cgi?id=44236#c4
+# First argument is the command, remaining arguments are passed to command
+# Solution based on https://stackoverflow.com/a/20165094
+proc_id=$(cat /proc/sys/kernel/random/uuid)
+
+fish_startup "${proc_id}"
+#echo "Done with fish_startup..."
+export WINEPREFIX=/tmp/psf_${proc_id}
+#echo "Wine Prefix set to $WINEPREFIX"
+
+if [ -z "${INTERACTIVE_FISH}" ]; then
+  #echo "Running non-interactive mode..."
+  mkdir -p /tmp/psf/${proc_id}
+  cp * /tmp/psf/${proc_id}  > /dev/null 2>&1
+  pushd /tmp/psf/${proc_id} >/dev/null || exit
+  xvfb-run -a fish_command "${1}" "${2}"
+
+  #echo "Done with the fish_command ${1} for file ${2}"
+  popd >/dev/null || exit
+  cp -r /tmp/psf/${proc_id}/* .
+  rm -rf /tmp/psf/${proc_id}/
+else
+  if [[ "$SCALED_FISH" == 1 ]]; then
+    RES=${RESOLUTION_FISH:-"1024x768"}
+    wine explorer /desktop=FISH,"$RES" "${1}" "${@:2}"
+  else
+    wine "${1}" "${@:2}"
+  fi
+fi
+
+wineboot --shutdown >/dev/null 2>&1
+rm -rf /tmp/psf_${proc_id}

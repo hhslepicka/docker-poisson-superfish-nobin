@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+from __future__ import print_function  # Only Python 2.x
+import os
+import sys
+import re
+import time
+import subprocess
+import threading
+
+
+CMD_TYPE_MAP = {
+    'AUTOMESH': {'count': 2, 'pattern': r'CLOSE\_WRITE\,CLOSE OUTAUT\.TXT'},
+    'AUTOFISH': {'count': 2, 'pattern': r'CLOSE .*\.SFO'},
+    'FISH': {'count': 2, 'pattern': r'CLOSE .*\.T35'},
+    'POISSON': {'count': 2, 'pattern': r'CLOSE\_WRITE\,CLOSE OUTPOI\.TXT'},
+    'SF7': {'count': 2, 'pattern': r'CLOSE\_WRITE\,CLOSE OUTSF7\.TXT'},
+    'SFO': {'count': 2, 'pattern': r'CLOSE .*\.SFO'}
+}
+
+
+class Watcher:
+    def __init__(self, cmd, cmd_type):
+        self.popen = None
+        self.cmd_popen = None
+        self.cmd = cmd
+        self.cmd_type = cmd_type
+        self.timeout = os.getenv('FISH_TIMEOUT', 90)
+        self.t_event = threading.Event()
+        self.t_event.clear()
+        self.thread = None
+
+    def runner(self):
+        ret = self.t_event.wait(self.timeout)
+        # ret will be False if a Timeout happens
+        if not ret:
+            self.popen.kill()
+            self.cmd_popen.kill()
+
+    def execute(self):
+        self.thread = threading.Thread(target=self.runner)
+        self.popen = subprocess.Popen(["inotifywait", "-m", "."],
+                                      stdout=subprocess.PIPE,
+                                      universal_newlines=True)
+        self.cmd_popen = subprocess.Popen(self.cmd.split(" "))
+        self.thread.start()
+        for stdout_line in iter(self.popen.stdout.readline, ""):
+            yield stdout_line
+        self.popen.stdout.close()
+        self.popen.wait()
+
+    def run(self):
+        t_map = CMD_TYPE_MAP.get(self.cmd_type)
+        expected_count = t_map.get('count')
+        pattern = t_map.get('pattern')
+
+        count = 0
+        for line in self.execute():
+            if 'ISDIR' in line:
+                continue
+            if re.search(pattern, line):
+                self.t_event.set()
+                count += 1
+            if count == expected_count:
+                # Give time for commands to flush
+                time.sleep(1)
+                self.popen.kill()
+                self.cmd_popen.kill()
+                break
+
+
+command_type = sys.argv[1].split('/')[-1].upper().replace('.EXE', '').strip()
+
+if command_type not in CMD_TYPE_MAP:
+    sys.exit(
+        'Command {} is not supported. Please use interactive mode.'.format(
+            command_type
+        )
+    )
+
+command = 'wine {} {}'.format(*sys.argv[1:])
+
+w = Watcher(cmd=command, cmd_type=command_type)
+w.run()
