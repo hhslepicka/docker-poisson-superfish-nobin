@@ -24,7 +24,7 @@ class Watcher:
         self.cmd_popen = None
         self.cmd = cmd
         self.cmd_type = cmd_type
-        self.timeout = os.getenv('FISH_TIMEOUT', 90)
+        self.timeout = os.getenv('FISH_TIMEOUT', 120)
         self.t_event = threading.Event()
         self.t_event.clear()
         self.thread = None
