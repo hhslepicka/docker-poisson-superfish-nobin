@@ -19,6 +19,8 @@ along with this container.
 Here are the steps that you will need in order to properly build this container
 and use it:
 
+> ⚠️ As of April 2024, and since at least May 2023, the download site for Poisson/Superfish is unavailable. Unfortunately, we do not have any information about when or if it will be made available again. (see https://github.com/ChristopherMayes/PySuperfish/issues/2)
+
 - Go into the [Poisson Superfish website](https://laacg.lanl.gov/laacg/services/download_sf.phtml#ps6) and download the file.
 - Using a Windows machine, install it and copy the binary files from the 
 installation folder into a folder called `PoissonSuperfish`.
