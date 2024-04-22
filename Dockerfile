@@ -27,7 +27,7 @@ COPY wine_cfg /wine_configs/default
 
 # Copy the code over and extract
 COPY superfish.tar.gz /
-RUN tar -xzf superfish.tar.gz; rm -rf superfish.tar.gz
+RUN tar -xzf superfish.tar.gz && rm -rf superfish.tar.gz
 
 # Create unix alias for wine commands for superfish
 RUN /bin/bash -c 'for app in $(ls /PoissonSuperfish/*.EXE); \
